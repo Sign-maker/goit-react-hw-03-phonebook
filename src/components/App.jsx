@@ -7,12 +7,27 @@ import { Filter } from './Filter/Filter';
 import initialContacts from '../datajson/initContacts.json';
 import { Title } from './Title/Title.styled';
 import { Subtitle } from './Subtitle/Subtitle.styled';
+const CONTACT_LS = 'contact-storage';
 
 export class App extends Component {
   state = {
-    contacts: [...initialContacts],
+    contacts: [],
     filter: '',
   };
+
+  componentDidMount() {
+    const contacts = JSON.parse(localStorage.getItem(CONTACT_LS)) ?? [
+      ...initialContacts,
+    ];
+    this.setState({ contacts });
+  }
+
+  componentDidUpdate(_, prevState) {
+    const { contacts } = this.state;
+    if (prevState.contacts !== contacts) {
+      localStorage.setItem(CONTACT_LS, JSON.stringify(contacts));
+    }
+  }
 
   addContact = contactData => {
     const { name: newName } = contactData;
@@ -45,11 +60,9 @@ export class App extends Component {
     const { contacts, filter } = this.state;
     const filterToLowercase = filter.toLowerCase();
 
-    return !filter
-      ? contacts
-      : contacts.filter(({ name }) =>
-          name.toLowerCase().includes(filterToLowercase)
-        );
+    return contacts.filter(({ name }) =>
+      name.toLowerCase().includes(filterToLowercase)
+    );
   };
 
   onItemDelete = delId =>
